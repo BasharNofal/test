@@ -3,6 +3,8 @@
 const express = require("express");
 const { ExpressPeerServer } = require("peer");
 const app = express();
+const cors  = require('cors');
+app.use(cors());
 
 app.use(express.static("public"));
 
