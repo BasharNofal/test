@@ -2,7 +2,7 @@
 
 const joinRoomBtn = document.querySelector('#joinRoomBtn');
 const connectToPeerBtn = document.querySelector('#connectToPeerBtn');
-const shareScreenBtn = document.querySelector('#shareScreenBtn');
+// const shareScreenBtn = document.querySelector('#shareScreenBtn');
 const idInput = document.querySelector('#idInput');
 const localVideoArea = document.querySelector('#localVideo');
 const remoteVideoArea = document.querySelector('#remoteVideo');
@@ -51,13 +51,52 @@ function callPeer(id) {
     }).catch(error => {
         console.log(error);
     });
+    
+    document.querySelector('#shareScreenBtn').addEventListener('click', () => {
+        navigator.mediaDevices.getDisplayMedia({
+            video: {
+                cursor: 'always'
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true
+            }
+        }).then(stream => {
+            let videoTrack = stream.getVideoTracks()[0];
+            // console.log(stream.getVideoTracks());
+            if (videoTrack.readyState === 'ended') {
+                console.log(1);
+                stopScreenShare(stream);
+            }
+            // console.log({ videoTrack });
+            // console.log({ currentPeer });
+            let sender = currentPeer.getSenders().find(s => {
+                return s.track.kind == videoTrack.kind;
+            });
+            // console.log({ sender });
+            sender.replaceTrack(videoTrack);
+        }).catch(error => {
+            console.log(error);
+        });
+
+    });
+
+    function stopScreenShare(stream) {
+        let videoTrack = stream.getVideoTracks()[0];
+        let sender = currentPeer.getSenders().find(s => {
+            // console.log({s})
+            return s.track.kind == videoTrack.kind;
+        });
+        // console.log({ sender });
+        sender.replaceTrack(videoTrack);
+    }
 }
 
 function renderVideo(stream, videoArea) {
-    if(videoArea){
+    if (videoArea) {
         videoArea.srcObject = stream;
         let videoPromise = videoArea.play();
-        if (videoPromise){
+        if (videoPromise) {
             videoPromise.then(() => {
                 setTimeout(() => {
                     videoArea.play();
@@ -74,44 +113,7 @@ function hideModal() {
     document.getElementById("entry-modal").hidden = true;
 }
 
-function shareScreen() {
 
-    navigator.mediaDevices.getDisplayMedia({
-        video: {
-            cursor: 'always'
-        },
-        audio: {
-            echoCancellation: true,
-            noiseSuppression: true
-        }
-    }).then(stream => {
-        let videoTrack = stream.getVideoTracks()[0];
-        // console.log(stream.getVideoTracks());
-        if (videoTrack.readyState === 'ended'){
-            console.log(1);
-            stopScreenShare(stream);
-        }
-        // console.log({ videoTrack });
-        // console.log({ currentPeer });
-        let sender = currentPeer.getSenders().find(s => {
-            return s.track.kind == videoTrack.kind;
-        });
-        // console.log({ sender });
-        sender.replaceTrack(videoTrack);
-    }).catch(error => {
-        console.log(error);
-    });
-}
-
-function stopScreenShare(stream) {
-    let videoTrack = stream.getVideoTracks()[0];
-    let sender = currentPeer.getSenders().find(s => {
-        // console.log({s})
-        return s.track.kind == videoTrack.kind;
-    });
-    // console.log({ sender });
-    sender.replaceTrack(videoTrack);
-}
 
 
 
