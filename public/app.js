@@ -56,7 +56,16 @@ function callPeer(id) {
 function renderVideo(stream, videoArea) {
     if(videoArea){
         videoArea.srcObject = stream;
-        videoArea.play();
+        let videoPromise = videoArea.play();
+        if (videoPromise){
+            videoPromise.then(() => {
+                setTimeout(() => {
+                    videoArea.play();
+                }, 1000);
+            }).catch(error => {
+                console.log(error);
+            })
+        }
         videoArea.muted = true;
     }
 }
@@ -77,6 +86,7 @@ function shareScreen() {
         }
     }).then(stream => {
         let videoTrack = stream.getVideoTracks()[0];
+        // console.log(stream.getVideoTracks());
         if (videoTrack.readyState === 'ended'){
             console.log(1);
             stopScreenShare(stream);
